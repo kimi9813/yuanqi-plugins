@@ -40,7 +40,7 @@ python app.py
 
 ## 部署说明
 
-详细部署方法见 [`docs/部署方法.docx`](docs/部署方法.docx)，包含以下 5 种方式：
+详细部署方法见 [`docs/部署方法.docx`](docs/部署方法.docx)（Word 版）或 [`docs/手机部署教程.md`](docs/手机部署教程.md)（手机纯文本版），包含以下 5 种方式：
 
 1. **GitHub Codespaces**：零配置、免费，适合测试
 2. **Render**：免费 Web Service，24/7 运行（推荐）
