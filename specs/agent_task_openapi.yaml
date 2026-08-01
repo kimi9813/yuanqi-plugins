@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  title: agent_task
+  description: |
+    腾讯元器智能体插件：Agent 任务管理。Agent 模式下支持任务追踪分配、
+    任务修复、任务操作，以及任务实时状态统计。
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/agent
+x-yuanqi-plugin:
+  id: agent_task
+  name: Agent 任务管理
+  category: agent
+  icon: 📋
+paths:
+  /action:
+    post:
+      operationId: agent_task_action
+      summary: Agent 任务操作
+      description: |
+        统一入口：create/update/delete/get/list。payload 根据 action 变化。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                task_id:
+                  type: string
+                  description: 任务 ID（非 create 时需要）
+                action:
+                  type: string
+                  enum: [create, update, delete, get, list]
+                  description: 操作类型
+                payload:
+                  type: object
+                  description: 操作载荷
+      responses:
+        "200":
+          description: 操作结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  task:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      title: { type: string }
+                      description: { type: string }
+                      assignee: { type: string }
+                      priority: { type: string }
+                      status: { type: string }
+                      parent_id: { type: string }
+                      created_at: { type: string }
+                      updated_at: { type: string }
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                  deleted_id: { type: string }
+  /status:
+    get:
+      operationId: agent_task_status
+      summary: 任务实时状态
+      description: 返回任务总数及各状态数量统计。
+      responses:
+        "200":
+          description: 统计信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  counts:
+                    type: object
+                    properties:
+                      todo: { type: integer }
+                      in_progress: { type: integer }
+                      done: { type: integer }
+                      cancelled: { type: integer }

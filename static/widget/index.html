@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Task Widget</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f5f6f7;
+      color: #1f2328;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 16px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      text-align: center;
+      padding: 10px 4px;
+      border-radius: 8px;
+      background: #f6f8fa;
+    }
+    .stat .num { font-size: 20px; font-weight: 700; }
+    .stat .label { font-size: 12px; color: #656d76; margin-top: 4px; }
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    input, select, button, textarea {
+      font-size: 14px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #d0d7de;
+      outline: none;
+    }
+    button {
+      background: #2da44e;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #2c974b; }
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
+    .task {
+      padding: 10px;
+      border-radius: 8px;
+      background: #f6f8fa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .task .title { font-weight: 600; }
+    .task .meta { font-size: 12px; color: #656d76; }
+    .badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .todo { background: #fff8c5; color: #7d4e00; }
+    .in_progress { background: #ddf4ff; color: #0969da; }
+    .done { background: #dafbe1; color: #1a7f37; }
+    .cancelled { background: #ffebe9; color: #cf222e; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Agent 任务看板</h1>
+    <div class="stats" id="stats">
+      <div class="stat"><div class="num" id="total">0</div><div class="label">总计</div></div>
+      <div class="stat"><div class="num" id="todo">0</div><div class="label">待办</div></div>
+      <div class="stat"><div class="num" id="in_progress">0</div><div class="label">进行中</div></div>
+      <div class="stat"><div class="num" id="done">0</div><div class="label">完成</div></div>
+    </div>
+    <div class="form">
+      <input id="title" placeholder="任务标题" />
+      <input id="assignee" placeholder="负责人" />
+      <select id="priority">
+        <option value="low">低</option>
+        <option value="medium" selected>中</option>
+        <option value="high">高</option>
+      </select>
+      <button onclick="createTask()">创建任务</button>
+    </div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+
+  <script>
+    const API = "/agent";
+
+    async function fetchStatus() {
+      const res = await fetch(`${API}/status`);
+      const data = await res.json();
+      document.getElementById("total").textContent = data.total;
+      document.getElementById("todo").textContent = data.counts.todo || 0;
+      document.getElementById("in_progress").textContent = data.counts.in_progress || 0;
+      document.getElementById("done").textContent = data.counts.done || 0;
+    }
+
+    async function fetchTasks() {
+      const res = await fetch(`${API}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "list", task_id: "", payload: {} })
+      });
+      const data = await res.json();
+      renderTasks(data.tasks || []);
+    }
+
+    function renderTasks(tasks) {
+      const list = document.getElementById("taskList");
+      list.innerHTML = "";
+      tasks.forEach(t => {
+        const div = document.createElement("div");
+        div.className = "task";
+        div.innerHTML = `
+          <div>
+            <div class="title">${escapeHtml(t.title)}</div>
+            <div class="meta">${escapeHtml(t.assignee || "未分配")} · ${escapeHtml(t.priority)}</div>
+          </div>
+          <span class="badge ${t.status}">${t.status}</span>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function createTask() {
+      const title = document.getElementById("title").value.trim();
+      if (!title) return alert("请输入标题");
+      const payload = {
+        title,
+        assignee: document.getElementById("assignee").value.trim(),
+        priority: document.getElementById("priority").value
+      };
+      await fetch(`${API}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", task_id: "", payload })
+      });
+      document.getElementById("title").value = "";
+      document.getElementById("assignee").value = "";
+      await refresh();
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function refresh() {
+      await fetchStatus();
+      await fetchTasks();
+    }
+
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

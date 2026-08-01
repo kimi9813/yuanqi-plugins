@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: file_tool
+  description: |
+    腾讯元器智能体插件：文件读取与转换。支持 PPT、Word、PDF、表格、.sh、.zip、.rar、
+    图片及各类脚本文件的读取与转换。
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/file
+x-yuanqi-plugin:
+  id: file_tool
+  name: 文件工具
+  category: file
+  icon: 📄
+paths:
+  /upload-and-convert:
+    post:
+      operationId: file_upload_and_convert
+      summary: 上传并转换文件
+      description: 上传文件（PDF/Word/Excel/PPT/文本/脚本/ZIP 等）并提取为文本。
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 待上传文件
+      responses:
+        "200":
+          description: 转换成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename: { type: string }
+                  mime_type: { type: string }
+                  text: { type: string }
+                  pages: { type: integer }
+  /read:
+    post:
+      operationId: file_read
+      summary: 读取已上传文件
+      description: 根据文件名读取 data/files 目录下已上传文件并转换为文本。
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [file_path]
+              properties:
+                file_path:
+                  type: string
+                  description: 相对 data/files 的文件名
+      responses:
+        "200":
+          description: 读取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename: { type: string }
+                  mime_type: { type: string }
+                  text: { type: string }
+                  pages: { type: integer }

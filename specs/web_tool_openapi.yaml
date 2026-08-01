@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  title: web_tool
+  description: |
+    腾讯元器智能体插件：网页增强搜索、关键词搜索、网页文本/图片/表格提取、
+    网页操作与视觉理解、网页部署、网页链接部署、网页安全检测。
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/web
+x-yuanqi-plugin:
+  id: web_tool
+  name: 网页工具
+  category: web
+  icon: 🌐
+paths:
+  /search:
+    post:
+      operationId: web_search
+      summary: 网页增强搜索
+      description: 根据关键词在网页中搜索并返回标题、链接与摘要。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: 搜索关键词
+                num_results:
+                  type: integer
+                  default: 5
+                  minimum: 1
+                  maximum: 10
+                  description: 返回结果数量
+      responses:
+        "200":
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title: { type: string }
+                        url: { type: string }
+                        snippet: { type: string }
+  /fetch:
+    post:
+      operationId: web_fetch
+      summary: 网页内容提取与安全检测
+      description: |
+        抓取目标网页，提取标题、正文、图片、链接，并做基础安全检测。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                  description: 目标网页 URL
+                include_images:
+                  type: boolean
+                  default: false
+                  description: 是否提取图片链接
+      responses:
+        "200":
+          description: 提取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  title: { type: string }
+                  text: { type: string }
+                  images:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url: { type: string }
+                        alt: { type: string }
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url: { type: string }
+                        text: { type: string }
+                  safe_check:
+                    type: object
+                    properties:
+                      reachable: { type: boolean }
+                      risk_score: { type: integer }
+                      risky_extension: { type: boolean }

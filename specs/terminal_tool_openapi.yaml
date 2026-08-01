@@ -1,0 +1,148 @@
+openapi: 3.0.0
+info:
+  title: terminal_tool
+  description: |
+    腾讯元器智能体插件：Python/Java 终端。集成 Python 与 Java 终端功能，
+    支持文件编辑、运行测试、报错输出、文件读取、终端操作、代码编写等。
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/terminal
+x-yuanqi-plugin:
+  id: terminal_tool
+  name: 终端工具
+  category: terminal
+  icon: 💻
+paths:
+  /python:
+    post:
+      operationId: terminal_python_execute
+      summary: 执行 Python 代码
+      description: 在受控环境中运行 Python 代码，返回 stdout/stderr。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Python 代码
+                timeout:
+                  type: integer
+                  default: 10
+                  minimum: 1
+                  maximum: 60
+      responses:
+        "200":
+          description: 执行结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  stdout: { type: string }
+                  stderr: { type: string }
+                  returncode: { type: integer }
+  /shell:
+    post:
+      operationId: terminal_shell_execute
+      summary: 执行 Shell 命令
+      description: 执行受控 Shell 命令，禁止危险操作。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command:
+                  type: string
+                  description: Shell 命令
+                timeout:
+                  type: integer
+                  default: 10
+                  minimum: 1
+                  maximum: 60
+      responses:
+        "200":
+          description: 执行结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  stdout: { type: string }
+                  stderr: { type: string }
+                  returncode: { type: integer }
+  /file:
+    post:
+      operationId: terminal_file_edit
+      summary: 文件创建/读取/更新/删除
+      description: 在工作目录中进行文件的增删改查。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, path]
+              properties:
+                action:
+                  type: string
+                  enum: [create, read, update, delete]
+                  description: 操作类型
+                path:
+                  type: string
+                  description: 相对工作目录的路径
+                content:
+                  type: string
+                  description: 文件内容（create/update 需要）
+      responses:
+        "200":
+          description: 操作结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  path: { type: string }
+                  action: { type: string }
+                  content: { type: string }
+  /java:
+    post:
+      operationId: terminal_java_execute
+      summary: 执行 Java 代码
+      description: 编译并运行 Java 代码（需系统已安装 javac/java）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Java 代码
+                timeout:
+                  type: integer
+                  default: 10
+                  minimum: 1
+                  maximum: 60
+      responses:
+        "200":
+          description: 执行结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  stdout: { type: string }
+                  stderr: { type: string }

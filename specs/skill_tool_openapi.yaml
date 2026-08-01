@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: skill_tool
+  description: |
+    腾讯元器智能体插件：技能创建与调用。智能体可自由创建、使用技能，
+    技能应可用，并支持终端调用。
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/skill
+x-yuanqi-plugin:
+  id: skill_tool
+  name: 技能工具
+  category: skill
+  icon: 🛠️
+paths:
+  /create:
+    post:
+      operationId: skill_create
+      summary: 创建技能
+      description: 创建可复用的技能，包含提示词模板与参数定义。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, prompt_template]
+              properties:
+                name:
+                  type: string
+                  description: 技能名称
+                description:
+                  type: string
+                  description: 技能描述
+                prompt_template:
+                  type: string
+                  description: 提示词模板，可用 {参数名} 占位
+                parameters:
+                  type: object
+                  description: 参数 JSON Schema
+      responses:
+        "200":
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  skill:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      description: { type: string }
+                      prompt_template: { type: string }
+                      parameters: { type: object }
+  /invoke:
+    post:
+      operationId: skill_invoke
+      summary: 调用技能
+      description: 根据名称调用技能，传入参数并返回渲染后的提示词。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  description: 技能名称
+                parameters:
+                  type: object
+                  description: 调用参数
+      responses:
+        "200":
+          description: 调用成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  skill_name: { type: string }
+                  rendered_prompt: { type: string }
+                  parameters: { type: object }
