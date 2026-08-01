@@ -40,5 +40,35 @@ python app.py
 
 ## 部署说明
 
-部署到公网后，请将 `specs/*.yaml` 中的 `servers.url` 替换为实际公网地址，
-再上传到腾讯元器插件中心。
+详细部署方法见 [`docs/部署方法.docx`](docs/部署方法.docx)，包含以下 5 种方式：
+
+1. **GitHub Codespaces**：零配置、免费，适合测试
+2. **Render**：免费 Web Service，24/7 运行（推荐）
+3. **Railway**：按量计费，启动快
+4. **Fly.io**：全球边缘节点，容器化部署
+5. **VPS + Docker**：最稳定，适合生产
+
+项目已内置对应配置文件：
+
+- `Dockerfile` / `docker-compose.yml` / `.dockerignore`
+- `render.yaml`
+- `railway.json`
+- `fly.toml`
+
+### 通用步骤
+
+1. 部署到公网，获取 HTTPS 地址，例如 `https://your-app.example.com`
+2. 将 `specs/*.yaml` 中的 `servers.url` 替换为实际地址，例如：
+   ```yaml
+   servers:
+     - url: https://your-app.example.com/web
+   ```
+3. 在腾讯元器插件中心上传对应 YAML 文件完成注册。
+
+### Docker 快速部署
+
+```bash
+docker compose up -d --build
+```
+
+服务监听 `http://localhost:8000`。
