@@ -1,0 +1,42 @@
+# 阿里云 Serverless Devs 配置文件
+# 文档：https://docs.serverless-devs.com/
+# 使用前安装：npm install -g @serverless-devs/s
+# 部署命令：s deploy
+edition: 3.0.0
+name: yuanqi-plugins
+access: default
+
+vars:
+  region: cn-hangzhou
+  functionName: yuanqi-plugins
+  serviceName: yuanqi-plugins-service
+
+resources:
+  yuanqi_plugins:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.functionName}
+      runtime: python3.11
+      handler: handler
+      memorySize: 1024
+      timeout: 60
+      instanceConcurrency: 100
+      environmentVariables: {}
+      code: ./
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*

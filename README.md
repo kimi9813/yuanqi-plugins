@@ -40,13 +40,15 @@ python app.py
 
 ## 部署说明
 
-详细部署方法见 [`docs/部署方法.docx`](docs/部署方法.docx)（Word 版）或 [`docs/手机部署教程.md`](docs/手机部署教程.md)（手机纯文本版），包含以下 5 种方式：
+详细部署方法见 [`docs/部署方法.docx`](docs/部署方法.docx)（Word 版）或 [`docs/手机部署教程.md`](docs/手机部署教程.md)（手机纯文本版），包含以下 7 种方式：
 
 1. **GitHub Codespaces**：零配置、免费，适合测试
 2. **Render**：免费 Web Service，24/7 运行（推荐）
 3. **Railway**：按量计费，启动快
 4. **Fly.io**：全球边缘节点，容器化部署
 5. **VPS + Docker**：最稳定，适合生产
+6. **阿里云函数计算 FC**：按调用计费，国内访问快
+7. **腾讯云云函数 SCF**：按调用计费，国内访问快
 
 项目已内置对应配置文件：
 
@@ -54,6 +56,10 @@ python app.py
 - `render.yaml`
 - `railway.json`
 - `fly.toml`
+- `s.yaml`（阿里云 Serverless Devs）
+- `serverless/template.yaml`（腾讯云 SCF SAM）
+- `handler.py`（函数计算通用入口）
+- `serverless/`（FC / SCF 专用入口）
 
 ### 通用步骤
 
@@ -72,3 +78,12 @@ docker compose up -d --build
 ```
 
 服务监听 `http://localhost:8000`。
+
+### 函数计算快速部署
+
+项目已内置函数计算入口，可直接部署到阿里云 FC / 腾讯云 SCF：
+
+- 阿里云 FC：函数类型选择 **HTTP 函数**，运行环境 **Python 3.11**，请求处理程序填 `handler`。
+- 腾讯云 SCF：运行环境 **Python 3.11**，执行方法填 `handler.main_handler`，触发器选择 **API 网关**。
+
+详见 [`serverless/README.md`](serverless/README.md) 与 [`docs/手机部署教程.md`](docs/手机部署教程.md) 的函数计算章节。

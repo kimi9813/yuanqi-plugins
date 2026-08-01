@@ -1,0 +1,26 @@
+# 腾讯云 SCF SAM 模板
+# 文档：https://cloud.tencent.com/document/product/583/95027
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: SCF::Transform
+Description: yuanqi-plugins serverless deployment
+
+Resources:
+  default:
+    Type: TencentCloud::Serverless::Function
+    Properties:
+      FunctionName: yuanqi-plugins
+      Description: Yuanqi agent plugins - web, file, terminal, skill, agent task
+      CodeUri: ../
+      Handler: handler.main_handler
+      Runtime: Python3.11
+      MemorySize: 1024
+      Timeout: 60
+      Environment:
+        Variables: {}
+      Events:
+        apiGW:
+          Type: APIGW
+          Properties:
+            StageName: release
+            ServiceName: yuanqi-plugins-api
+            HttpMethod: ANY

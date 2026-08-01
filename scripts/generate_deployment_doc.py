@@ -182,8 +182,49 @@ flyctl deploy
     add_code_block(doc, "git pull && docker compose up -d --build")
     add_paragraph(doc, "按「二、通用部署后配置」修改 `specs/*.yaml` 并注册。")
 
+    # 方法6：阿里云 FC
+    add_heading(doc, "八、方法 6：阿里云函数计算 FC（函数计算，国内访问快）", level=1)
+    add_paragraph(doc, "优点：按调用计费、不用维护服务器、国内访问快。缺点：实例无状态，本地文件/数据在实例回收后丢失。", size=10)
+    steps = [
+        "访问 https://fc.console.aliyun.com/ 并开通函数计算服务。",
+        "点击「函数」→「创建函数」，选择「自定义创建」：",
+    ]
+    for s in steps:
+        add_paragraph(doc, s)
+    add_code_block(doc, """函数类型：HTTP 函数
+函数名称：yuanqi-plugins
+运行环境：Python 3.11
+请求处理程序（Handler）：handler
+内存规格：1024 MB
+超时时间：60 秒
+""")
+    add_paragraph(doc, "上传代码：可下载 GitHub 仓库 ZIP 包，在「代码」标签页上传；或使用 Serverless Devs 命令行 `s deploy`。")
+    add_paragraph(doc, "创建 HTTP 触发器，请求方法勾选 GET/POST/PUT/DELETE/OPTIONS，认证方式选择「无需认证」。")
+    add_paragraph(doc, "部署完成后复制公网地址，例如 `https://yuanqi-plugins-xxx.cn-hangzhou.fcapp.run`。")
+    add_paragraph(doc, "按「二、通用部署后配置」修改 `specs/*.yaml` 并注册。")
+
+    # 方法7：腾讯云 SCF
+    add_heading(doc, "九、方法 7：腾讯云云函数 SCF（函数计算）", level=1)
+    add_paragraph(doc, "优点：与腾讯元器同属腾讯云生态，访问延迟低。缺点：需要配置 API 网关触发器。", size=10)
+    steps = [
+        "访问 https://console.cloud.tencent.com/scf 并创建函数。",
+        "选择「从头开始」：",
+    ]
+    for s in steps:
+        add_paragraph(doc, s)
+    add_code_block(doc, """函数名称：yuanqi-plugins
+运行环境：Python 3.11
+执行方法：handler.main_handler
+内存：1024 MB
+超时时间：60 秒
+""")
+    add_paragraph(doc, "上传代码：下载 GitHub 仓库 ZIP 包，在函数「代码」页本地上传。")
+    add_paragraph(doc, "进入「触发管理」→「创建触发器」，选择「API 网关」，服务名填 `yuanqi-plugins-api`，发布环境选择「发布」，请求方法选择「ANY」。")
+    add_paragraph(doc, "创建完成后复制访问路径，例如 `https://service-xxx.gz.apigw.tencentcs.com/release/`。")
+    add_paragraph(doc, "按「二、通用部署后配置」修改 `specs/*.yaml` 并注册。")
+
     # 注册到腾讯元器
-    add_heading(doc, "八、注册到腾讯元器插件中心", level=1)
+    add_heading(doc, "十、注册到腾讯元器插件中心", level=1)
     steps = [
         "登录腾讯元器后台（https://yuanqi.tencent.com/）。",
         "进入「插件中心」→「创建插件」。",
@@ -196,24 +237,28 @@ flyctl deploy
     add_note(doc, "上传前务必确认 servers.url 是 HTTPS 公网地址，且服务处于可访问状态，否则元器校验会失败。")
 
     # 安全建议
-    add_heading(doc, "九、安全与运维建议", level=1)
+    add_heading(doc, "十一、安全与运维建议", level=1)
     tips = [
         "terminal_tool 支持执行代码和 Shell，建议仅在可信环境或启用访问控制后使用。",
         "生产环境建议增加 API Key 鉴权或仅允许腾讯元器 IP 段访问。",
         "定期清理 data/files 目录，避免磁盘占满。",
         "如果不需要 Java 执行，可从 Dockerfile 中移除 default-jdk 以减小镜像体积。",
         "建议为服务配置 HTTPS（Render/Railway/Fly.io 默认提供，VPS 需自行配置证书）。",
+        "函数计算场景下，文件/技能/任务等本地数据会丢失，生产环境请挂载 NAS/CFS 或改用对象存储/数据库。",
+        "函数计算建议设置超时 60 秒、内存 1024 MB，避免文件转换和网页抓取超时。",
     ]
     for i, tip in enumerate(tips, 1):
         add_paragraph(doc, f"{i}. {tip}")
 
     # 常见问题
-    add_heading(doc, "十、常见问题", level=1)
+    add_heading(doc, "十二、常见问题", level=1)
     faq = [
         ("Q：元器解析 YAML 时提示 servers.url 错误？", "A：确保地址以 https:// 开头，且末尾不要重复路径前缀。例如部署域名是 https://abc.com，则 web_tool 的 servers.url 应为 https://abc.com/web。"),
         ("Q：部署后访问 /docs 正常，但元器调用返回 404？", "A：检查 YAML 中的 operationId 是否与代码中的路由一致，且路径前缀正确。"),
         ("Q：文件转换功能报错？", "A：确认服务器安装了相关依赖。Docker 镜像已内置 python-docx、openpyxl、python-pptx、PyPDF2。"),
         ("Q：Java 代码无法执行？", "A：确认服务器已安装 JDK。Docker 镜像已内置 default-jdk。"),
+        ("Q：函数计算部署后文件/任务数据丢失？", "A：函数计算实例无状态，本地数据会随实例回收清空。测试场景不影响，生产场景请挂载 NAS/CFS 或改用数据库存储。"),
+        ("Q：函数计算返回 502 错误？", "A：通常因超时或内存不足导致。请将超时时间设为 60 秒，内存设为 1024 MB。"),
     ]
     for q, a in faq:
         add_paragraph(doc, q, bold=True)
