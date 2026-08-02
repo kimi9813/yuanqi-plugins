@@ -3,10 +3,11 @@
 
 支持：
 - 阿里云函数计算 FC（HTTP 函数）
-- 腾讯云 SCF（API 网关触发器）
+- 腾讯云 SCF（事件函数 + API 网关触发器）
 - AWS Lambda（API Gateway）
 - 其他兼容 Lambda/ASGI 的事件入口
 
+腾讯云 SCF Web 函数建议直接使用 `serverless/scf_handler.py` 中的 `app`。
 本地开发仍使用 `python app.py`，函数计算平台直接指定本文件中的 handler。
 """
 from mangum import Mangum

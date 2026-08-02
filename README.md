@@ -83,7 +83,8 @@ docker compose up -d --build
 
 项目已内置函数计算入口，可直接部署到阿里云 FC / 腾讯云 SCF：
 
-- 阿里云 FC：函数类型选择 **HTTP 函数**，运行环境 **Python 3.11**，请求处理程序填 `handler`。
-- 腾讯云 SCF：运行环境 **Python 3.11**，执行方法填 `handler.main_handler`，触发器选择 **API 网关**。
+- 阿里云 FC：函数类型选择 **HTTP 函数**，运行环境 **Python 3.10**，请求处理程序填 `handler`。
+- 腾讯云 SCF（推荐）：函数类型选择 **Web 函数**，运行环境 **Python 3.10**，执行方法填 `serverless.scf_handler.app`。
+- 腾讯云 SCF（备选）：函数类型选择 **事件函数**，运行环境 **Python 3.10**，执行方法填 `serverless.scf_handler.main_handler`，触发器选择 **API 网关**。
 
 详见 [`serverless/README.md`](serverless/README.md) 与 [`docs/手机部署教程.md`](docs/手机部署教程.md) 的函数计算章节。

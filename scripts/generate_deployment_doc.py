@@ -193,7 +193,7 @@ flyctl deploy
         add_paragraph(doc, s)
     add_code_block(doc, """函数类型：HTTP 函数
 函数名称：yuanqi-plugins
-运行环境：Python 3.11
+运行环境：Python 3.10
 请求处理程序（Handler）：handler
 内存规格：1024 MB
 超时时间：60 秒
@@ -205,21 +205,29 @@ flyctl deploy
 
     # 方法7：腾讯云 SCF
     add_heading(doc, "九、方法 7：腾讯云云函数 SCF（函数计算）", level=1)
-    add_paragraph(doc, "优点：与腾讯元器同属腾讯云生态，访问延迟低。缺点：需要配置 API 网关触发器。", size=10)
-    steps = [
-        "访问 https://console.cloud.tencent.com/scf 并创建函数。",
-        "选择「从头开始」：",
-    ]
-    for s in steps:
-        add_paragraph(doc, s)
+    add_paragraph(doc, "优点：与腾讯元器同属腾讯云生态，访问延迟低。缺点：函数计算实例无状态，本地数据会丢失。", size=10)
+    add_paragraph(doc, "推荐选择 Web 函数，无需单独配置 API 网关；如果没有 Web 函数选项，则选择事件函数 + API 网关触发器。")
+    add_paragraph(doc, "方式 A：Web 函数（推荐）")
     add_code_block(doc, """函数名称：yuanqi-plugins
-运行环境：Python 3.11
-执行方法：handler.main_handler
+函数类型：Web 函数
+运行环境：Python 3.10
+执行方法：serverless.scf_handler.app
 内存：1024 MB
 超时时间：60 秒
 """)
     add_paragraph(doc, "上传代码：下载 GitHub 仓库 ZIP 包，在函数「代码」页本地上传。")
-    add_paragraph(doc, "进入「触发管理」→「创建触发器」，选择「API 网关」，服务名填 `yuanqi-plugins-api`，发布环境选择「发布」，请求方法选择「ANY」。")
+    add_paragraph(doc, "创建完成后 SCF 会自动分配访问地址，例如 `https://yuanqi-plugins-xxx.gz.apigw.tencentcs.com/`。")
+    add_paragraph(doc, "方式 B：事件函数 + API 网关")
+    add_code_block(doc, """函数名称：yuanqi-plugins
+函数类型：事件函数
+运行环境：Python 3.10
+执行方法：serverless.scf_handler.main_handler
+内存：1024 MB
+超时时间：60 秒
+触发器：API 网关
+请求方法：ANY
+""")
+    add_paragraph(doc, "上传代码后，进入「触发管理」→「创建触发器」，选择「API 网关」，服务名填 `yuanqi-plugins-api`，发布环境选择「发布」，请求方法选择「ANY」。")
     add_paragraph(doc, "创建完成后复制访问路径，例如 `https://service-xxx.gz.apigw.tencentcs.com/release/`。")
     add_paragraph(doc, "按「二、通用部署后配置」修改 `specs/*.yaml` 并注册。")
 

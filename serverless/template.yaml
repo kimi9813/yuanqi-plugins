@@ -12,7 +12,7 @@ Resources:
       Description: Yuanqi agent plugins - web, file, terminal, skill, agent task
       CodeUri: ../
       Handler: handler.main_handler
-      Runtime: Python3.11
+      Runtime: Python3.10
       MemorySize: 1024
       Timeout: 60
       Environment:

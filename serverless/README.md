@@ -4,11 +4,12 @@
 
 ## 入口文件
 
-| 平台 | 入口文件 | 处理函数 |
-|------|----------|----------|
-| 阿里云 FC | `handler.py` | `handler` |
-| 腾讯云 SCF | `handler.py` 或 `serverless/scf_handler.py` | `main_handler` |
-| AWS Lambda | `handler.py` | `handler` |
+| 平台 | 入口文件 | 处理函数 | 函数类型 |
+|------|----------|----------|----------|
+| 阿里云 FC | `handler.py` | `handler` | HTTP 函数 |
+| 腾讯云 SCF（Web 函数） | `serverless/scf_handler.py` | `app` | Web 函数 |
+| 腾讯云 SCF（事件函数） | `handler.py` 或 `serverless/scf_handler.py` | `main_handler` | 事件函数 + API 网关 |
+| AWS Lambda | `handler.py` | `handler` | API Gateway |
 
 ## 依赖
 
