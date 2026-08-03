@@ -20,8 +20,9 @@ COPY . .
 # 创建数据目录
 RUN mkdir -p data/files data/skills data/tasks
 
-# 暴露端口
+# 默认暴露 8000，可通过环境变量 PORT 修改
 EXPOSE 8000
+ENV PORT=8000
 
 # 启动命令
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT}
