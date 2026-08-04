@@ -6,7 +6,7 @@ info:
     技能应可用，并支持终端调用。
   version: "1.0.0"
 servers:
-  - url: http://localhost:8000/skill
+  - url: https://1462115218-953rypn5o1.ap-guangzhou.tencentscf.com/skill
 x-yuanqi-plugin:
   id: skill_tool
   name: 技能工具
