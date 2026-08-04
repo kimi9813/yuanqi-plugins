@@ -74,7 +74,7 @@ async def terminal_python_execute(req: PythonExecuteRequest):
 
     try:
         proc = subprocess.run(
-            ["python", tmp_path],
+            ["python3", tmp_path],
             capture_output=True,
             text=True,
             timeout=req.timeout,

@@ -22,6 +22,8 @@ class WebFetchRequest(BaseModel):
 
 class WebSearchResponse(BaseModel):
     results: list = Field(default_factory=list)
+    error: Optional[str] = Field(None, description="搜索失败时的错误说明")
+    details: list = Field(default_factory=list, description="各搜索源的错误详情")
 
 
 class WebFetchResponse(BaseModel):
@@ -39,7 +41,9 @@ async def _fetch_url(url: str, timeout: float = 15.0) -> str:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/124.0.0.0 Safari/537.36"
-        )
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
     }
     async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=timeout) as client:
         resp = await client.get(url)
@@ -79,33 +83,76 @@ def _extract_images(soup: BeautifulSoup, base_url: str) -> list:
     return images[:30]
 
 
+async def _search_duckduckgo(query: str, num_results: int) -> list:
+    """通过 DuckDuckGo HTML 版获取搜索结果。"""
+    encoded = urllib.parse.quote(query)
+    url = f"https://html.duckduckgo.com/html/?q={encoded}"
+    html = await _fetch_url(url)
+    soup = BeautifulSoup(html, "html.parser")
+    results = []
+    for item in soup.select(".result")[:num_results]:
+        a = item.select_one(".result__a")
+        snippet = item.select_one(".result__snippet")
+        if not a:
+            continue
+        href = a.get("href", "")
+        if href.startswith("//"):
+            href = "https:" + href
+        results.append(
+            {
+                "title": a.get_text(strip=True),
+                "url": href,
+                "snippet": snippet.get_text(strip=True) if snippet else "",
+            }
+        )
+    return results
+
+
+async def _search_bing(query: str, num_results: int) -> list:
+    """Bing 搜索备用。"""
+    encoded = urllib.parse.quote(query)
+    url = f"https://www.bing.com/search?q={encoded}"
+    html = await _fetch_url(url, timeout=10.0)
+    soup = BeautifulSoup(html, "html.parser")
+    results = []
+    # Bing 结果通常位于 .b_algo
+    for item in soup.select(".b_algo")[:num_results]:
+        a = item.select_one("a")
+        if not a:
+            continue
+        href = a.get("href", "")
+        title = a.get_text(strip=True)
+        snippet_elem = item.select_one(".b_caption p") or item.select_one("p")
+        snippet = snippet_elem.get_text(strip=True) if snippet_elem else ""
+        if href.startswith("http"):
+            results.append({"title": title, "url": href, "snippet": snippet})
+    return results
+
+
 @router.post("/search", operation_id="web_search", response_model=WebSearchResponse)
 async def web_search(req: WebSearchRequest):
     """网页增强搜索 / 关键词搜索"""
+    errors = []
     try:
-        encoded = urllib.parse.quote(req.query)
-        url = f"https://html.duckduckgo.com/html/?q={encoded}"
-        html = await _fetch_url(url)
-        soup = BeautifulSoup(html, "html.parser")
-        results = []
-        for item in soup.select(".result")[: req.num_results]:
-            a = item.select_one(".result__a")
-            snippet = item.select_one(".result__snippet")
-            if not a:
-                continue
-            href = a.get("href", "")
-            if href.startswith("//"):
-                href = "https:" + href
-            results.append(
-                {
-                    "title": a.get_text(strip=True),
-                    "url": href,
-                    "snippet": snippet.get_text(strip=True) if snippet else "",
-                }
-            )
-        return {"results": results}
+        results = await _search_duckduckgo(req.query, req.num_results)
+        if results:
+            return {"results": results}
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"搜索失败: {exc}")
+        errors.append(f"DuckDuckGo: {type(exc).__name__}: {exc}")
+
+    try:
+        results = await _search_bing(req.query, req.num_results)
+        if results:
+            return {"results": results}
+    except Exception as exc:
+        errors.append(f"Bing: {type(exc).__name__}: {exc}")
+
+    # 两个源都失败时返回空结果，避免元器调用中断
+    return {
+        "results": [],
+        "error": "当前网络环境无法访问搜索引擎，请检查函数出口网络或稍后重试",
+        "details": errors,
+    }
 
 
 @router.post("/fetch", operation_id="web_fetch", response_model=WebFetchResponse)

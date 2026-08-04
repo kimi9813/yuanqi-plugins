@@ -30,8 +30,8 @@ class TaskUpdateRequest(BaseModel):
 
 
 class TaskActionRequest(BaseModel):
-    task_id: str = Field(..., description="任务 ID")
     action: str = Field(..., description="create/update/delete/get/list")
+    task_id: Optional[str] = Field(None, description="任务 ID（非 create/list 时需要）")
     payload: dict = Field(default_factory=dict, description="操作载荷")
 
 

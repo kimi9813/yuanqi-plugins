@@ -4,4 +4,4 @@ set -e
 # Tencent SCF Web Function bootstrap
 # Binds to port 9000 by default; app.py reads PORT env var.
 export PORT="${PORT:-9000}"
-exec /var/lang/python3/bin/python app.py
+exec python3 app.py
