@@ -15,3 +15,4 @@ data/files/*
 data/skills/*.json
 data/tasks/*.json
 .DS_Store
+vendor/

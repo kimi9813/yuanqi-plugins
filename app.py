@@ -1,5 +1,11 @@
 import os
+import sys
 from contextlib import asynccontextmanager
+
+# 优先使用打包在项目内的依赖（适用于 SCF 等不自动安装依赖的环境）
+vendor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+if os.path.isdir(vendor_path) and vendor_path not in sys.path:
+    sys.path.insert(0, vendor_path)
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
