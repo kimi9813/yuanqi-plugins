@@ -6,7 +6,7 @@ info:
     任务修复、任务操作，以及任务实时状态统计。
   version: "1.0.0"
 servers:
-  - url: http://localhost:8000/agent
+  - url: https://1462115218-953rypn5o1.ap-guangzhou.tencentscf.com/agent
 x-yuanqi-plugin:
   id: agent_task
   name: Agent 任务管理
