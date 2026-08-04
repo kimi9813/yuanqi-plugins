@@ -6,7 +6,7 @@ info:
     支持文件编辑、运行测试、报错输出、文件读取、终端操作、代码编写等。
   version: "1.0.0"
 servers:
-  - url: https://1462115218-953rypn5o1.ap-guangzhou.tencentscf.com/terminal
+  - url: https://1462115218-f5navqdt75.ap-guangzhou.tencentscf.com/terminal
 x-yuanqi-plugin:
   id: terminal_tool
   name: 终端工具
