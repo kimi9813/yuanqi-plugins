@@ -6,7 +6,7 @@ info:
     网页操作与视觉理解、网页部署、网页链接部署、网页安全检测。
   version: "1.0.0"
 servers:
-  - url: http://localhost:8000/web
+  - url: https://1462115218-953rypn5o1.ap-guangzhou.tencentscf.com/web
 x-yuanqi-plugin:
   id: web_tool
   name: 网页工具
