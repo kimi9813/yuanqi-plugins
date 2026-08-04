@@ -1,0 +1,4 @@
+# Force Unix line endings for shell scripts and bootstrap files
+*.sh text eol=lf
+scf_bootstrap text eol=lf
+bootstrap text eol=lf
