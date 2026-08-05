@@ -9,9 +9,11 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from plugins.config import get_data_dir
+
 router = APIRouter()
 
-WORK_DIR = Path(os.environ.get("DATA_DIR", "data")) / "files"
+WORK_DIR = get_data_dir() / "files"
 WORK_DIR.mkdir(parents=True, exist_ok=True)
 
 FORBIDDEN_SHELL = ["rm -rf /", ":(){ :|:& };:", "> /dev/sda", "mkfs", "dd if=/dev/zero"]

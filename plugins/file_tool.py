@@ -9,9 +9,11 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
+from plugins.config import get_data_dir
+
 router = APIRouter()
 
-UPLOAD_DIR = Path(os.environ.get("DATA_DIR", "data")) / "files"
+UPLOAD_DIR = get_data_dir() / "files"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 

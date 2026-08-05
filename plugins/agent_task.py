@@ -8,9 +8,11 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from plugins.config import get_data_dir
+
 router = APIRouter()
 
-TASK_DIR = Path(os.environ.get("DATA_DIR", "data")) / "tasks"
+TASK_DIR = get_data_dir() / "tasks"
 TASK_DIR.mkdir(parents=True, exist_ok=True)
 
 
