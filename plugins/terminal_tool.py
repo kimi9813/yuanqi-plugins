@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-WORK_DIR = Path("data/files")
+WORK_DIR = Path(os.environ.get("DATA_DIR", "data")) / "files"
 WORK_DIR.mkdir(parents=True, exist_ok=True)
 
 FORBIDDEN_SHELL = ["rm -rf /", ":(){ :|:& };:", "> /dev/sda", "mkfs", "dd if=/dev/zero"]

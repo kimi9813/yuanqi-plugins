@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +9,7 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-SKILL_DIR = Path("data/skills")
+SKILL_DIR = Path(os.environ.get("DATA_DIR", "data")) / "skills"
 SKILL_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -1,11 +1,13 @@
 import os
 import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 # 优先使用打包在项目内的依赖（适用于 SCF 等不自动安装依赖的环境）
-vendor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
-if os.path.isdir(vendor_path) and vendor_path not in sys.path:
-    sys.path.insert(0, vendor_path)
+if os.environ.get("SKIP_VENDOR") != "1":
+    vendor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor")
+    if os.path.isdir(vendor_path) and vendor_path not in sys.path:
+        sys.path.insert(0, vendor_path)
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -19,11 +21,31 @@ from plugins import (
 )
 
 
+def _resolve_data_dir() -> str:
+    """解析数据目录：优先环境变量，否则尝试当前目录，不可写则回退到 /tmp/data。"""
+    if os.environ.get("DATA_DIR"):
+        return os.environ["DATA_DIR"]
+    candidate = Path("data")
+    try:
+        candidate.mkdir(parents=True, exist_ok=True)
+        # 测试是否可写
+        test_file = candidate / ".write_test"
+        test_file.write_text("ok")
+        test_file.unlink()
+        return str(candidate)
+    except OSError:
+        return "/tmp/data"
+
+
+os.environ.setdefault("DATA_DIR", _resolve_data_dir())
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs("data/files", exist_ok=True)
-    os.makedirs("data/skills", exist_ok=True)
-    os.makedirs("data/tasks", exist_ok=True)
+    data_dir = Path(os.environ["DATA_DIR"])
+    os.makedirs(data_dir / "files", exist_ok=True)
+    os.makedirs(data_dir / "skills", exist_ok=True)
+    os.makedirs(data_dir / "tasks", exist_ok=True)
     yield
 
 

@@ -1,4 +1,5 @@
 import json
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -9,7 +10,7 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-TASK_DIR = Path("data/tasks")
+TASK_DIR = Path(os.environ.get("DATA_DIR", "data")) / "tasks"
 TASK_DIR.mkdir(parents=True, exist_ok=True)
 
 

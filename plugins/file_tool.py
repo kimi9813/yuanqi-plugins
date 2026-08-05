@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-UPLOAD_DIR = Path("data/files")
+UPLOAD_DIR = Path(os.environ.get("DATA_DIR", "data")) / "files"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
