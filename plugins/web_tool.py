@@ -158,6 +158,10 @@ async def web_search(req: WebSearchRequest):
 @router.post("/fetch", operation_id="web_fetch", response_model=WebFetchResponse)
 async def web_fetch(req: WebFetchRequest):
     """网页文本 / 图片 / 表格 / 链接提取与视觉理解摘要"""
+    parsed = urllib.parse.urlparse(req.url)
+    path_lower = parsed.path.lower()
+    suspicious = ["exe", "zip", "rar", "bat", "cmd", "sh"]
+    risky_ext = any(path_lower.endswith(f".{ext}") for ext in suspicious)
     try:
         html = await _fetch_url(req.url)
         soup = BeautifulSoup(html, "html.parser")
@@ -165,25 +169,34 @@ async def web_fetch(req: WebFetchRequest):
         text = _extract_text(soup)
         links = _extract_links(soup, req.url)
         images = _extract_images(soup, req.url) if req.include_images else []
-        parsed = urllib.parse.urlparse(req.url)
-        path_lower = parsed.path.lower()
-        suspicious = ["exe", "zip", "rar", "bat", "cmd", "sh"]
-        risky_ext = any(path_lower.endswith(f".{ext}") for ext in suspicious)
-        safe_check = {
-            "reachable": True,
-            "risk_score": 30 if risky_ext else 0,
-            "risky_extension": risky_ext,
-        }
         return WebFetchResponse(
             url=req.url,
             title=title,
             text=text[:8000],
             images=images,
             links=links,
-            safe_check=safe_check,
+            safe_check={
+                "reachable": True,
+                "risk_score": 30 if risky_ext else 0,
+                "risky_extension": risky_ext,
+            },
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"页面解析失败: {exc}")
+        # 不要抛 500，否则元器会判定工具调用失败。
+        # 返回 200 并说明无法抓取，模型可改用搜索摘要继续回答。
+        err_msg = f"无法获取页面内容（{type(exc).__name__}: {exc}）。请基于搜索结果摘要回答。"
+        return WebFetchResponse(
+            url=req.url,
+            title="",
+            text=err_msg,
+            images=[],
+            links=[],
+            safe_check={
+                "reachable": False,
+                "risk_score": 30 if risky_ext else 0,
+                "risky_extension": risky_ext,
+            },
+        )
 
 
 @router.get("/safe-check", operation_id="web_safe_check")

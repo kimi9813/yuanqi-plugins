@@ -17,7 +17,10 @@ paths:
     post:
       operationId: web_search
       summary: 网页增强搜索
-      description: 根据关键词在网页中搜索并返回标题、链接与摘要。
+      description: |
+        当用户询问时事、新闻、百科知识、概念解释、最新动态、人物/公司/产品信息，
+        或任何需要联网获取最新信息的问题时，必须调用此工具搜索。
+        根据关键词在网页中搜索并返回标题、链接与摘要。
       requestBody:
         required: true
         content:
